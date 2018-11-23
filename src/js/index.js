@@ -1,5 +1,6 @@
 //Global app controller
 import Search from './models/Search';
+import Recipe from './models/Recipe';
 import * as searchView from './views/searchView';
 import {elements, renderLoader, clearLoader} from './views/base';
 
@@ -52,3 +53,36 @@ elements.searchResPages.addEventListener('click', e => {
         searchView.renderResults(state.search.result, goToPage);
     }
 });
+
+/**
+ * RECIPE CONTROLLER
+**/
+const controlRecipe = async () => {
+    //Get ID from url
+    const id = window.location.hash.replace('#', '');
+
+    if (id) {
+        //Create new recipe objext
+        state.recipe = new Recipe(id);
+
+        try {
+            //Get recipe data and parse ingredients
+            await state.recipe.getRecipe();
+            state.recipe.parseIngredients();
+
+            //Calculate servings and time
+            state.recipe.calcTime();
+            state.recipe.calcServings();
+
+            //Render recipe
+            console.log(state.recipe);
+
+        } catch (e) {
+            alert('Error processing recipe');
+        }
+
+    }
+};
+
+['hashchange', 'lead'].forEach(event => window.addEventListener(event, controlRecipe));
+
