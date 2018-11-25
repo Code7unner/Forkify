@@ -14,13 +14,14 @@ export default class Recipe {
             this.img = res.data.recipe.image_url;
             this.url = res.data.recipe.source_url;
             this.ingredients = res.data.recipe.ingredients;
-        } catch (e) {
-            console.log(e);
+        } catch (error) {
+            console.log(error);
             alert('Something went wrong :(');
         }
     }
 
     calcTime() {
+        // Assuming that we need 15 min for each 3 ingredients
         const numIng = this.ingredients.length;
         const periods = Math.ceil(numIng / 3);
         this.time = periods * 15;
@@ -38,7 +39,6 @@ export default class Recipe {
         const newIngredients = this.ingredients.map(el => {
             //Uniform units
             let ingredient = el.toLowerCase();
-
             unitsLong.forEach((unit, i) => {
                 ingredient = ingredient.replace(unit, unitsShort[i]);
             });
@@ -46,11 +46,11 @@ export default class Recipe {
             //Remove parentheses
             ingredient = ingredient.replace(/ *\([^)]*\) */g, ' ');
 
+            //Parse ingredients into count, unit and ingredient
             const arrIng = ingredient.split(' ');
             const unitIndex = arrIng.findIndex(el2 => units.includes(el2));
 
             let objIng;
-
             if (unitIndex > -1) {
                 const arrCount = arrIng.slice(0, unitIndex);
 
@@ -65,15 +65,17 @@ export default class Recipe {
                     count,
                     unit: arrIng[unitIndex],
                     ingredient: arrIng.slice(unitIndex + 1).join(' ')
-                }
+                };
 
             } else if (parseInt(arrIng[0], 10)) {
+                // There is NO unit, but 1st element is number
                 objIng = {
                     count: parseInt(arrIng[0], 10),
                     unit: '',
-                    ingredient: arrIng.splice(1).join(' ')
+                    ingredient: arrIng.slice(1).join(' ')
                 }
             } else if (unitIndex === -1) {
+                // There is NO unit and NO number in 1st position
                 objIng = {
                     count: 1,
                     unit: '',
@@ -87,11 +89,11 @@ export default class Recipe {
         this.ingredients = newIngredients;
     }
 
-    updateServings(type) {
-        //Servings
+    updateServings (type) {
+        // Servings
         const newServings = type === 'dec' ? this.servings - 1 : this.servings + 1;
 
-        //Ingredients
+        // Ingredients
         this.ingredients.forEach(ing => {
             ing.count *= (newServings / this.servings);
         });
